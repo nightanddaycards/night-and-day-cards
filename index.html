@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08080d">
+  <title>Night &amp; Day Cards</title>
+  <meta name="description" content="Trading cards, singles, and events. Hours, location, and upcoming game nights at Night &amp; Day Cards.">
+  <meta property="og:title" content="Night &amp; Day Cards">
+  <meta property="og:description" content="Trading cards, singles, and a place to play.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nightanddaycards.com/">
+  <meta property="og:image" content="https://nightanddaycards.com/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+      <span>night &amp; day cards</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#hours">Hours</a>
+      <a href="#events">Events</a>
+      <a href="#visit">Visit</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <h1 class="hero-logo"><img src="img/logo.png" width="1200" height="919" alt="Night &amp; Day Cards"></h1>
+      <div class="hero-copy">
+        <p class="tagline" data-bind="tagline"></p>
+        <div class="actions">
+          <a id="cta-shop" class="btn btn-gold" href="#" hidden>Shop online</a>
+          <a class="btn btn-dark" href="#events">See events</a>
+          <a id="cta-discord" class="btn btn-dark" href="#" hidden>Join the Discord</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="games" aria-labelledby="games-h" id="games" hidden>
+      <h2 id="games-h">Games we carry</h2>
+      <ul id="games-list"></ul>
+    </section>
+
+    <div class="cards">
+      <section class="card card-day" id="hours" aria-labelledby="day-h">
+        <div class="card-in">
+          <div class="card-head">
+            <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true" fill="currentColor">
+              <circle cx="12" cy="12" r="5"/>
+              <g>
+                <path d="M12 1.2l1.5 3.4h-3z"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(45 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(90 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(135 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(180 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(225 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(270 12 12)"/>
+                <path d="M12 1.2l1.5 3.4h-3z" transform="rotate(315 12 12)"/>
+              </g>
+            </svg>
+            <h2 id="day-h">By day</h2>
+          </div>
+          <p class="lede" data-bind="dayBlurb"></p>
+          <dl id="hours-list" class="hours"></dl>
+        </div>
+      </section>
+
+      <section class="card card-night" id="events" aria-labelledby="night-h">
+        <div class="card-in">
+          <div class="card-head">
+            <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+            <h2 id="night-h">By night</h2>
+          </div>
+          <p class="lede" data-bind="nightBlurb"></p>
+          <ul id="events-list" class="events"></ul>
+        </div>
+      </section>
+    </div>
+
+    <section class="card card-visit" id="visit" aria-labelledby="visit-h">
+      <div class="card-in visit">
+        <div>
+          <h2 id="visit-h">Find the shop</h2>
+          <address id="address"></address>
+          <a id="map-link" href="#" hidden>Get directions</a>
+        </div>
+        <div id="contact-block">
+          <h2>Get in touch</h2>
+          <p class="contact">
+            <a id="phone-link" href="#" hidden></a>
+            <a id="email-link" href="#" hidden></a>
+            <a id="discord-link" href="#" hidden>Join our Discord</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> Night &amp; Day Cards</p>
+  </footer>
+
+  <script src="js/shop.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
