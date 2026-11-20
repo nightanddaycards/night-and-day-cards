@@ -30,20 +30,55 @@
     $("games").hidden = false;
   }
 
-  var today = DAYS[new Date().getDay()];
+  var now = new Date();
+  var today = DAYS[now.getDay()];
+  var todayIso = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   var hours = $("hours-list");
-  (s.hours || []).forEach(function (row) {
-    var wrap = el("div", "", "row");
-    var dt = el("dt", row[0]);
-    var dd = el("dd", row[1]);
-    if (String(row[0]).toLowerCase() === today) {
-      wrap.className = "row today";
-      dt.appendChild(el("span", "Today", "badge"));
-    }
+
+  function addRow(label, value, isToday) {
+    var wrap = el("div", "", isToday ? "row today" : "row");
+    var dt = el("dt", label);
+    if (isToday) dt.appendChild(el("span", "Today", "badge"));
     wrap.appendChild(dt);
-    wrap.appendChild(dd);
+    wrap.appendChild(el("dd", value));
     hours.appendChild(wrap);
-  });
+  }
+
+  // special: optional [{ date: "YYYY-MM-DD", hours: "Closed" }] holiday overrides
+  function renderHours(rows, special) {
+    hours.textContent = "";
+    var todaySpecial = null;
+    (special || []).forEach(function (sp) { if (sp.date === todayIso) todaySpecial = sp; });
+    (rows || []).forEach(function (row) {
+      var isToday = String(row[0]).toLowerCase() === today;
+      addRow(row[0], isToday && todaySpecial ? todaySpecial.hours + " (holiday hours)" : row[1], isToday);
+    });
+    var upcoming = (special || []).filter(function (sp) { return sp.date > todayIso; });
+    if (upcoming.length) {
+      var wrap = el("div", "", "row special");
+      wrap.appendChild(el("dt", "Holiday hours"));
+      var dd = el("dd");
+      upcoming.forEach(function (sp) {
+        var d = new Date(sp.date + "T12:00:00");
+        var label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        dd.appendChild(el("div", label + ": " + sp.hours));
+      });
+      wrap.appendChild(dd);
+      hours.appendChild(wrap);
+    }
+  }
+
+  // Show the hours from shop.js right away, then replace them with the
+  // Google Business Profile hours (data/hours.json, updated daily) if available.
+  renderHours(s.hours);
+  if (window.fetch) {
+    fetch("data/hours.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.hours && data.hours.length) renderHours(data.hours, data.special);
+      })
+      .catch(function () { /* keep shop.js hours */ });
+  }
 
   var events = $("events-list");
   var list = s.events || [];

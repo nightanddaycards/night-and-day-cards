@@ -6,6 +6,23 @@ Static site: plain HTML, CSS, and JavaScript. No build step.
 All shop details (hours, events, address, links) live in `js/shop.js`.
 Empty values are hidden on the page.
 
+## Hours sync from Google
+A GitHub Action (`.github/workflows/update-hours.yml`) pulls the hours from the
+Google Business Profile once a day and saves them to `data/hours.json`. The site
+shows those hours, plus any holiday hours in the coming week. If the file is
+missing, the site falls back to the `hours` in `js/shop.js`.
+
+One-time setup:
+1. In Google Cloud Console, create a project, turn on billing, and enable "Places API (New)".
+2. Create an API key, restricted to "Places API (New)".
+3. Find the shop's Place ID with Google's Place ID Finder
+   (developers.google.com/maps/documentation/places/web-service/place-id).
+4. In the GitHub repo, go to Settings > Secrets and variables > Actions and add two secrets:
+   `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID`.
+5. Open the Actions tab, pick "Update hours from Google", and click "Run workflow" to test it.
+
+Change the hours in Google Business Profile, not here. The site picks them up within a day.
+
 ## Preview locally
     python3 -m http.server 8000
 Then open http://localhost:8000

@@ -7,28 +7,29 @@ window.SHOP = {
   nightBlurb: "Bring a deck and play. Check the schedule below.",
 
   // Games shown as tags under the hero
-  games: ["Magic: The Gathering", "Pokémon", "Yu-Gi-Oh!", "Disney Lorcana"],
+  games: ["Pokémon","Magic: The Gathering", "Riftbound", "Yu-Gi-Oh!", "Disney Lorcana"],
 
   // [day, hours] pairs, shown in this order. Day names must be full English names.
+  // These are a FALLBACK: if data/hours.json exists (synced daily from the Google
+  // Business Profile by .github/workflows/update-hours.yml), the site shows that instead.
   hours: [
-    ["Monday", "Closed"],
-    ["Tuesday", "11 am – 7 pm"],
-    ["Wednesday", "11 am – 7 pm"],
-    ["Thursday", "11 am – 7 pm"],
-    ["Friday", "11 am – 10 pm"],
-    ["Saturday", "11 am – 10 pm"],
-    ["Sunday", "12 – 6 pm"]
+    ["Monday", "10 am – 5 pm"],
+    ["Tuesday", "10 am – 5 pm"],
+    ["Wednesday", "10 am – 5 pm"],
+    ["Thursday", "10 am – 5 pm"],
+    ["Friday", "10 am – 5 pm"],
+    ["Saturday", "Closed"],
+    ["Sunday", "Closed"]
   ],
 
   events: [
-    { name: "Friday night tournament", when: "Fridays, 6 pm", note: "Check in at the counter." },
-    { name: "Casual play", when: "Saturdays, 3 pm", note: "Free to join." }
+    { name: "Wednesday night Riftbound", when: "Wednesdays, 6 pm", note: "Check in at the counter." }
   ],
 
-  address: ["123 Main St", "City, ST 00000"],
-  mapUrl: "",      // e.g. a Google Maps link to the shop
-  phone: "",       // e.g. "555-555-5555"
-  email: "",       // e.g. "info@nightanddaycards.com"
-  discordUrl: "",  // Discord invite link
+  address: ["1704 Mileground Rd Ste c", "Morgantown, WV 26505"],
+  mapUrl: "https://www.google.com/maps?sca_esv=908680befa061847&udm&fvr=1&pvq=Cg0vZy8xMXAxX3MxYjd4IhkKE25pZ2h0IGFuZCBkYXkgY2FyZHMQAhgDiQHeLFaoqsHOsA&lqi=ChNuaWdodCBhbmQgZGF5IGNhcmRzSPzRgvyHtYCACFojEAAQARACEAMYABgCGAMiE25pZ2h0IGFuZCBkYXkgY2FyZHOSAQVzdG9yZeABAA&vet=10CAAQoqAOahcKEwiIkefPvJeYAxUAAAAAHQAAAAAQDw..i&cs=0&um=1&ie=UTF-8&fb=1&gl=us&sa=X&ftid=0x88357b8ca39a754d:0xb0cec1aaa8562cde",      // e.g. a Google Maps link to the shop
+  phone: "+13042784191",       // e.g. "555-555-5555"
+  email: "nightanddaycards@gmail.com",       // e.g. "info@nightanddaycards.com"
+  discordUrl: "https://discord.gg/UamsswJ4Q7",  // Discord invite link
   shopUrl: ""      // Square Online store or checkout link
 };
