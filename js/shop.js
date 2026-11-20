@@ -16,7 +16,7 @@ window.SHOP = {
     ["Monday", "10 am – 5 pm"],
     ["Tuesday", "10 am – 5 pm"],
     ["Wednesday", "10 am – 5 pm"],
-    ["Thursday", "10 am – 5 pm"],
+    ["Thursday", "Closed"],
     ["Friday", "10 am – 5 pm"],
     ["Saturday", "Closed"],
     ["Sunday", "Closed"]
