@@ -14,7 +14,7 @@
     if (!a) return;
     if (!href) { a.hidden = true; return; }
     a.href = href;
-    if (text) a.textContent = text;
+    if (text) (a.querySelector(".label") || a).textContent = text;
     a.hidden = false;
   }
 
