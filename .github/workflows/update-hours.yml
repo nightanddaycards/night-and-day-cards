@@ -18,8 +18,10 @@ jobs:
           node-version: 20
       - name: Fetch hours
         env:
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+          GBP_LOCATION_ID: ${{ secrets.GBP_LOCATION_ID }}
         run: node scripts/fetch-hours.mjs
       - name: Commit if changed
         run: |

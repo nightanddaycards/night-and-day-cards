@@ -1,84 +1,109 @@
-// Fetches the shop's hours from its Google Business listing (Places API, New)
+// Fetches the shop's hours from its Google Business Profile (Business Information API v1)
 // and writes them to data/hours.json for the site to read.
 //
-// Usage: GOOGLE_PLACES_API_KEY=... GOOGLE_PLACE_ID=... node scripts/fetch-hours.mjs
+// Usage:
+//   GBP_CLIENT_ID=... GBP_CLIENT_SECRET=... GBP_REFRESH_TOKEN=... GBP_LOCATION_ID=... \
+//     node scripts/fetch-hours.mjs
+//
+// GBP_LOCATION_ID is the numeric location ID (or "locations/<id>").
+// Get the refresh token and location ID once with scripts/get-gbp-token.mjs.
 // Requires Node 18+ (built-in fetch). No dependencies.
 
 import { writeFile, mkdir } from "node:fs/promises";
 
-const KEY = process.env.GOOGLE_PLACES_API_KEY;
-const PLACE_ID = process.env.GOOGLE_PLACE_ID;
-if (!KEY || !PLACE_ID) {
-  console.error("Set GOOGLE_PLACES_API_KEY and GOOGLE_PLACE_ID.");
+const { GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN, GBP_LOCATION_ID } = process.env;
+if (!GBP_CLIENT_ID || !GBP_CLIENT_SECRET || !GBP_REFRESH_TOKEN || !GBP_LOCATION_ID) {
+  console.error("Set GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN and GBP_LOCATION_ID.");
   process.exit(1);
 }
 
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Monday first, matching shop.js
+const SPECIAL_DAYS_AHEAD = 30; // how far ahead to show holiday hours
 
-const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(PLACE_ID)}`, {
-  headers: {
-    "X-Goog-Api-Key": KEY,
-    "X-Goog-FieldMask": "regularOpeningHours,currentOpeningHours"
-  }
+function fail(msg) {
+  console.error(msg);
+  process.exit(1);
+}
+
+// 1. Trade the long-lived refresh token for a short-lived access token
+const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+  method: "POST",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: new URLSearchParams({
+    client_id: GBP_CLIENT_ID,
+    client_secret: GBP_CLIENT_SECRET,
+    refresh_token: GBP_REFRESH_TOKEN,
+    grant_type: "refresh_token"
+  })
 });
-if (!res.ok) {
-  console.error(`Places API error ${res.status}: ${await res.text()}`);
-  process.exit(1);
+if (!tokenRes.ok) fail(`OAuth token error ${tokenRes.status}: ${await tokenRes.text()}`);
+const { access_token } = await tokenRes.json();
+
+// 2. Read the location's hours
+const locationName = GBP_LOCATION_ID.startsWith("locations/") ? GBP_LOCATION_ID : `locations/${GBP_LOCATION_ID}`;
+const res = await fetch(
+  `https://mybusinessbusinessinformation.googleapis.com/v1/${locationName}?readMask=regularHours,specialHours`,
+  { headers: { Authorization: `Bearer ${access_token}` } }
+);
+if (!res.ok) fail(`Business Profile API error ${res.status}: ${await res.text()}`);
+const loc = await res.json();
+if (!loc.regularHours || !loc.regularHours.periods || !loc.regularHours.periods.length) {
+  fail("Profile has no regular hours; leaving data/hours.json unchanged.");
 }
-const place = await res.json();
-if (!place.regularOpeningHours || !place.regularOpeningHours.periods) {
-  console.error("Listing has no regular opening hours; leaving data/hours.json unchanged.");
-  process.exit(1);
-}
+
+const DISPLAY_ORDER = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+const label = (d) => d[0] + d.slice(1).toLowerCase();
+
+// TimeOfDay omits fields that are 0; close of 24:00 means midnight
+const mins = (t = {}) => (t.hours || 0) * 60 + (t.minutes || 0);
 
 // "11 am", "11:30 am", "12 pm"
-function fmtTime(t, withMeridiem = true) {
-  const h = t.hour % 12 === 0 ? 12 : t.hour % 12;
-  const m = t.minute ? ":" + String(t.minute).padStart(2, "0") : "";
-  return withMeridiem ? `${h}${m} ${t.hour < 12 ? "am" : "pm"}` : `${h}${m}`;
+function fmtTime(t = {}, withMeridiem = true) {
+  const hr = (t.hours || 0) % 24;
+  const h = hr % 12 === 0 ? 12 : hr % 12;
+  const m = t.minutes ? ":" + String(t.minutes).padStart(2, "0") : "";
+  return withMeridiem ? `${h}${m} ${hr < 12 ? "am" : "pm"}` : `${h}${m}`;
 }
 
 // "11 am – 7 pm", or "12 – 6 pm" when both ends share am/pm
-function fmtRange(p) {
-  if (!p.close) return "Open 24 hours";
-  const sameHalf = (p.open.hour < 12) === (p.close.hour < 12) && p.close.hour !== 0;
-  return `${fmtTime(p.open, !sameHalf)} – ${fmtTime(p.close)}`;
+function fmtRange(open = {}, close = {}) {
+  if (mins(open) === 0 && mins(close) >= 24 * 60) return "Open 24 hours";
+  const oh = open.hours || 0;
+  const ch = close.hours || 0;
+  const sameHalf = (oh < 12) === (ch < 12) && ch % 24 !== 0 && mins(close) > mins(open);
+  return `${fmtTime(open, !sameHalf)} – ${fmtTime(close)}`;
 }
 
-function byDay(periods) {
-  const days = {};
-  for (const p of periods) {
-    (days[p.open.day] ||= []).push(p);
-  }
-  for (const d in days) {
-    days[d].sort((a, b) => a.open.hour * 60 + a.open.minute - (b.open.hour * 60 + b.open.minute));
-  }
-  return days;
-}
+// Regular weekly hours
+const byDay = {};
+for (const p of loc.regularHours.periods) (byDay[p.openDay] ||= []).push(p);
+const hours = DISPLAY_ORDER.map((d) => {
+  const ps = (byDay[d] || []).sort((a, b) => mins(a.openTime) - mins(b.openTime));
+  return [label(d), ps.length ? ps.map((p) => fmtRange(p.openTime, p.closeTime)).join(", ") : "Closed"];
+});
 
-const periods = place.regularOpeningHours.periods;
-// Google represents "open 24/7" as a single period with no close time
-const alwaysOpen = periods.length === 1 && !periods[0].close;
-const regular = byDay(periods);
-const hours = DISPLAY_ORDER.map((d) => [
-  DAY_NAMES[d],
-  alwaysOpen ? "Open 24 hours" : regular[d] ? regular[d].map(fmtRange).join(", ") : "Closed"
-]);
-
-// Holiday / special hours in the coming week (Google only reports ~7 days ahead)
-const special = [];
-const cur = place.currentOpeningHours;
-if (cur && cur.specialDays) {
-  for (const sd of cur.specialDays) {
-    const { year, month, day } = sd.date;
-    const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const periods = (cur.periods || []).filter(
-      (p) => p.open.date && p.open.date.year === year && p.open.date.month === month && p.open.date.day === day
-    );
-    special.push({ date: iso, hours: periods.length ? periods.map(fmtRange).join(", ") : "Closed" });
-  }
+// Holiday / special hours from today through the next SPECIAL_DAYS_AHEAD days
+const iso = ({ year, month, day }) => `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+const today = new Date().toISOString().slice(0, 10);
+const horizon = new Date(Date.now() + SPECIAL_DAYS_AHEAD * 864e5).toISOString().slice(0, 10);
+const specialByDate = {};
+for (const sp of (loc.specialHours && loc.specialHours.specialHourPeriods) || []) {
+  if (!sp.startDate) continue;
+  const date = iso(sp.startDate);
+  if (date < today || date > horizon) continue;
+  const entry = (specialByDate[date] ||= { closed: false, ranges: [] });
+  if (sp.closed) entry.closed = true;
+  else entry.ranges.push(sp);
 }
+const special = Object.keys(specialByDate)
+  .sort()
+  .map((date) => {
+    const { closed, ranges } = specialByDate[date];
+    ranges.sort((a, b) => mins(a.openTime) - mins(b.openTime));
+    return {
+      date,
+      hours: closed || !ranges.length ? "Closed" : ranges.map((r) => fmtRange(r.openTime, r.closeTime)).join(", ")
+    };
+  });
 
 const out = { source: "Google Business Profile", updated: new Date().toISOString(), hours, special };
 await mkdir("data", { recursive: true });
