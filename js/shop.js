@@ -7,7 +7,7 @@ window.SHOP = {
   nightBlurb: "Bring a deck and play. Check the schedule below.",
 
   // Games shown as tags under the hero
-  games: ["Pokémon","Magic: The Gathering", "Riftbound", "Yu-Gi-Oh!", "Disney Lorcana"],
+  games: ["Pokémon", "Magic: The Gathering", "Riftbound", "Yu-Gi-Oh!", "Disney Lorcana", "One Piece", "Flesh and Blood", "Star Wars Unlimited", "Dragon Ball"],
 
   // [day, hours] pairs, shown in this order. Day names must be full English names.
   hours: [
