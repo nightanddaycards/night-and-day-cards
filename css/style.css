@@ -106,8 +106,6 @@ a:hover { color: var(--text); }
 .hours dt { font-weight: 700; }
 .hours dd { margin: 0; }
 .hours .today dt, .hours .today dd { color: var(--lav); }
-.hours .special dt { margin-top: .5rem; }
-.hours .special dd { margin-top: .5rem; }
 .badge {
   margin-left: .5rem; padding: .05rem .45rem; border-radius: .25rem;
   background: var(--lav); color: var(--void); font-size: .75rem; font-weight: 700;

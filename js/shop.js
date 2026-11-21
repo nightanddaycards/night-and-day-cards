@@ -10,8 +10,6 @@ window.SHOP = {
   games: ["Pokémon","Magic: The Gathering", "Riftbound", "Yu-Gi-Oh!", "Disney Lorcana"],
 
   // [day, hours] pairs, shown in this order. Day names must be full English names.
-  // These are a FALLBACK: if data/hours.json exists (synced daily from the Google
-  // Business Profile by .github/workflows/update-hours.yml), the site shows that instead.
   hours: [
     ["Monday", "10 am – 5 pm"],
     ["Tuesday", "10 am – 5 pm"],
