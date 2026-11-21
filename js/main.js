@@ -56,7 +56,34 @@
     if (ev.note) li.appendChild(el("span", ev.note, "note"));
     events.appendChild(li);
   });
-  if (!list.length) events.appendChild(el("li", "Event schedule coming soon."));
+  if (!list.length && !s.facebookUrl) events.appendChild(el("li", "Event schedule coming soon."));
+  if (!list.length) events.hidden = true;
+
+  // Facebook events: Facebook's Page Plugin (events tab), sized to fit the card.
+  // The plugin only renders at widths between 180 and 500 px.
+  var fb = $("fb-events");
+  if (s.facebookUrl && fb) {
+    fb.hidden = false;
+    var w = Math.max(180, Math.min(500, Math.floor(fb.clientWidth)));
+    var frame = document.createElement("iframe");
+    frame.src = "https://www.facebook.com/plugins/page.php?" + new URLSearchParams({
+      href: s.facebookUrl,
+      tabs: "events",
+      width: w,
+      height: 520,
+      small_header: "true",
+      hide_cover: "true",
+      show_facepile: "false",
+      adapt_container_width: "true"
+    });
+    frame.width = w;
+    frame.height = 520;
+    frame.title = "Upcoming events on Facebook";
+    frame.loading = "lazy";
+    frame.setAttribute("scrolling", "no");
+    frame.setAttribute("frameborder", "0");
+    fb.appendChild(frame);
+  }
 
   var addr = $("address");
   (s.address || []).forEach(function (line) { addr.appendChild(el("div", line)); });
@@ -65,10 +92,12 @@
   setLink("cta-shop", s.shopUrl);
   setLink("cta-discord", s.discordUrl);
   setLink("discord-link", s.discordUrl);
+  setLink("facebook-link", s.facebookUrl);
+  setLink("fb-events-link", s.facebookUrl);
   setLink("phone-link", s.phone ? "tel:" + s.phone.replace(/[^\d+]/g, "") : "", s.phone);
   setLink("email-link", s.email ? "mailto:" + s.email : "", s.email);
 
-  if (!s.phone && !s.email && !s.discordUrl) $("contact-block").hidden = true;
+  if (!s.phone && !s.email && !s.discordUrl && !s.facebookUrl) $("contact-block").hidden = true;
 
   $("year").textContent = new Date().getFullYear();
 })();

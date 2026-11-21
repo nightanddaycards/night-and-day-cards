@@ -116,6 +116,14 @@ a:hover { color: var(--text); }
 .events strong { display: block; font-family: var(--font-display); font-size: 1.1rem; }
 .events .when, .events .note { display: block; }
 .events .note { color: var(--muted); }
+.events + .fb-events { margin-top: 1.5rem; }
+.fb-events { max-width: 500px; overflow: hidden; border-radius: .4rem; }
+.fb-events iframe { display: block; max-width: 100%; border: 0; }
+
+.fb-link { display: inline-flex; align-items: center; gap: .5rem; }
+.fb-link svg { flex: none; }
+.contact .fb-link { display: flex; }
+.card-night .fb-link { margin-top: 1rem; }
 
 .visit { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 2rem; }
 .visit h2 { margin-bottom: .75rem; font-size: 1.6rem; }

@@ -29,5 +29,7 @@ window.SHOP = {
   phone: "+13042784191",       // e.g. "555-555-5555"
   email: "nightanddaycards@gmail.com",       // e.g. "info@nightanddaycards.com"
   discordUrl: "https://discord.gg/UamsswJ4Q7",  // Discord invite link
+  // Facebook page. Its public events are embedded in the "By night" section.
+  facebookUrl: "https://www.facebook.com/profile.php?id=61594657520152",
   shopUrl: ""      // Square Online store or checkout link
 };
