@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08080d">
+  <title>Products in Stock | Night &amp; Day Cards, Morgantown, WV</title>
+  <meta name="description" content="See what's in stock at Night &amp; Day Cards in Morgantown, WV: Pokémon, Magic: The Gathering, Riftbound, Yu-Gi-Oh! and Disney Lorcana products, updated hourly.">
+  <link rel="canonical" href="https://nightanddaycards.com/products.html">
+  <meta property="og:title" content="Products in Stock | Night &amp; Day Cards">
+  <meta property="og:description" content="See what's in stock at Night &amp; Day Cards in Morgantown, WV.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nightanddaycards.com/products.html">
+  <meta property="og:image" content="https://nightanddaycards.com/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+      <span>night &amp; day cards</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="products.html" aria-current="page">Products</a>
+      <a href="index.html#hours">Hours</a>
+      <a href="index.html#events">Events</a>
+      <a href="index.html#visit">Visit</a>
+    </nav>
+  </header>
+
+  <main id="main" class="products-page">
+    <div class="products-intro">
+      <h1>In stock now</h1>
+      <p class="lede">What's on our shelves right now. Stock changes fast, so call ahead if you're coming in for something specific.</p>
+      <p id="updated" class="updated" hidden></p>
+    </div>
+
+    <form id="filters" class="filters" role="search" hidden>
+      <label class="field field-search">
+        <span>Search</span>
+        <input id="q" type="search" placeholder="Search products" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Category</span>
+        <select id="cat"><option value="">All categories</option></select>
+      </label>
+      <label class="field">
+        <span>Sort</span>
+        <select id="sort">
+          <option value="name">Name (A–Z)</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+        </select>
+      </label>
+    </form>
+
+    <p id="count" class="result-count" aria-live="polite"></p>
+    <ul id="product-grid" class="product-grid"></ul>
+    <div class="more-wrap">
+      <button id="more" class="btn btn-dark" type="button" hidden>Show more</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> Night &amp; Day Cards</p>
+  </footer>
+
+  <script src="js/shop.js"></script>
+  <script src="js/products.js"></script>
+</body>
+</html>

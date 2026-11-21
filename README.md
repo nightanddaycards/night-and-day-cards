@@ -6,6 +6,33 @@ Static site: plain HTML, CSS, and JavaScript. No build step.
 All shop details (hours, events, address, links) live in `js/shop.js`.
 Empty values are hidden on the page.
 
+## Products page (from Square)
+`products.html` lists what's in stock, from your Square catalog and inventory. The
+deploy workflow (`.github/workflows/deploy.yml`) builds `data/products.json` and
+publishes the site every hour and on every push to `main`. The product list is
+never committed, so stock updates don't clutter the repo.
+
+What shows up:
+- Items with stock at your location, marked "In stock" or "Low stock" (no exact counts).
+- "Low stock" uses each item's low-stock alert from Square, or 3 or fewer if none is set.
+- Items with inventory tracking turned off in Square count as in stock.
+- Archived items, items marked sold out, and services/events are left out.
+- Square categories become the Category filter, so name categories the way customers
+  should see them (e.g. "Pokémon", "Magic: The Gathering", "Supplies").
+
+One-time setup:
+1. At developer.squareup.com, sign in with your Square account and create an app.
+2. In the app, open Credentials, switch to **Production**, and copy the access token.
+   This token has full access to your Square account, so only paste it into GitHub Secrets.
+3. In the GitHub repo, go to Settings > Secrets and variables > Actions and add
+   `SQUARE_ACCESS_TOKEN`. If you have more than one Square location, also add
+   `SQUARE_LOCATION_ID` (otherwise the first active location is used).
+4. Repo Settings > Pages > Build and deployment > Source: choose **GitHub Actions**.
+   The custom domain stays as it is.
+5. Open the Actions tab, pick "Deploy site", and click "Run workflow".
+
+The Instagram workflow's commits are picked up by the next hourly deploy.
+
 ## Instagram feed
 A GitHub Action (`.github/workflows/update-instagram.yml`) pulls the 6 latest posts
 from Instagram once a day. It saves the photos to `img/instagram/` and the list to
@@ -41,8 +68,9 @@ Then open http://localhost:8000
 
 ## Deploy on GitHub Pages
 1. Create a GitHub repo and push this folder to the `main` branch.
-2. Repo Settings > Pages > Source: "Deploy from a branch", branch `main`, folder `/ (root)`.
-3. The `CNAME` file already sets the custom domain to nightanddaycards.com.
+2. Repo Settings > Pages > Source: "GitHub Actions". The "Deploy site" workflow publishes
+   the site on every push to `main` and hourly (see "Products page" above).
+3. Set the custom domain (nightanddaycards.com) in Repo Settings > Pages.
 
 ## Point the domain at GitHub (at your registrar's DNS settings)
 - `www`: a CNAME record pointing to `<your-github-username>.github.io`
