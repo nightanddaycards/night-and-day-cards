@@ -4,8 +4,9 @@
 //
 // Usage: SQUARE_ACCESS_TOKEN=... [SQUARE_LOCATION_ID=...] node scripts/fetch-square.mjs
 //
-// Runs during every deploy (.github/workflows/deploy.yml). If SQUARE_ACCESS_TOKEN
-// isn't set, it exits without error so the rest of the site still deploys.
+// Runs during every deploy (.github/workflows/deploy.yml), which sets REQUIRE_SQUARE
+// so a missing token fails the deploy instead of publishing without products.
+// Run locally without a token, it exits quietly.
 // SQUARE_LOCATION_ID is optional; without it the first active location is used.
 // Requires Node 18+ (built-in fetch). No dependencies.
 
@@ -17,6 +18,10 @@ const DEFAULT_LOW_STOCK = 3; // used when a variation has no low-stock alert set
 const MAX_DESCRIPTION = 200;
 
 const TOKEN = process.env.SQUARE_ACCESS_TOKEN;
+if (!TOKEN && process.env.REQUIRE_SQUARE === "true") {
+  console.error("SQUARE_ACCESS_TOKEN is not available to this job. Check the repository secret.");
+  process.exit(1);
+}
 if (!TOKEN) {
   console.warn("SQUARE_ACCESS_TOKEN not set; skipping products. The Products page will show a notice.");
   process.exit(0);

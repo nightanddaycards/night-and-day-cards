@@ -2,6 +2,11 @@ name: Deploy site
 
 # Publishes the site to GitHub Pages, with a fresh product list from Square.
 # Requires: repo Settings > Pages > Source = "GitHub Actions".
+#
+# Build and deploy are separate jobs (as in GitHub's Pages template): running
+# deploy-pages in the same job right after the upload sometimes fails with
+# "No artifacts named github-pages were found" because the artifact isn't
+# registered yet.
 
 on:
   push:
@@ -20,11 +25,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -34,10 +36,19 @@ jobs:
         env:
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
           SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+          REQUIRE_SQUARE: "true" # fail instead of publishing without products
         run: node scripts/fetch-square.mjs
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
           path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5
