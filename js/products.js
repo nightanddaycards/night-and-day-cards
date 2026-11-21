@@ -29,6 +29,7 @@
   var moreBtn = $("more");
   var q = $("q"), cat = $("cat"), sort = $("sort");
   var all = [];
+  var gameCats = {}; // game name (from shop.js) -> Square categories that belong to it
   var filtered = [];
   var shown = 0;
 
@@ -87,7 +88,9 @@
     var terms = norm(q.value).split(/\s+/).filter(Boolean);
     var c = cat.value;
     filtered = all.filter(function (p) {
-      if (c && p.category !== c) return false;
+      if (c.indexOf("game:") === 0) {
+        if (gameCats[c.slice(5)].indexOf(p.category) === -1) return false;
+      } else if (c && p.category !== c) return false;
       return terms.every(function (t) { return p._search.indexOf(t) !== -1; });
     });
     var s = sort.value;
@@ -110,7 +113,8 @@
     // Keep the search in the URL so it can be shared or bookmarked
     var params = new URLSearchParams();
     if (q.value.trim()) params.set("q", q.value.trim());
-    if (c) params.set("cat", c);
+    if (c.indexOf("game:") === 0) params.set("game", c.slice(5));
+    else if (c) params.set("cat", c);
     if (s !== "name") params.set("sort", s);
     var qs = params.toString();
     history.replaceState(null, "", qs ? "?" + qs : location.pathname);
@@ -131,11 +135,41 @@
 
       var cats = {};
       all.forEach(function (p) { cats[p.category] = (cats[p.category] || 0) + 1; });
-      Object.keys(cats).sort().forEach(function (name) {
+      var catNames = Object.keys(cats).sort();
+
+      // Group Square categories under the games listed in shop.js. A category
+      // belongs to a game when either name contains the other as whole words,
+      // ignoring case, accents and punctuation: "Japanese Pokemon" -> "Pokémon",
+      // "Lorcana" -> "Disney Lorcana", "Magic the Gathering" -> "Magic: The Gathering",
+      // or when they're identical with spaces removed: "Yugioh" -> "Yu-Gi-Oh!".
+      function wordsIn(haystack, needle) {
+        return (" " + haystack + " ").indexOf(" " + needle + " ") !== -1;
+      }
+      var gamesGroup = el("optgroup");
+      gamesGroup.label = "Games";
+      ((window.SHOP && window.SHOP.games) || []).forEach(function (game) {
+        var g = norm(game);
+        var list = catNames.filter(function (n) {
+          var a = norm(n);
+          // the last check matches "Yugioh" to "Yu-Gi-Oh!"
+          return wordsIn(a, g) || wordsIn(g, a) || a.replace(/ /g, "") === g.replace(/ /g, "");
+        });
+        if (!list.length) return;
+        gameCats[game] = list;
+        var total = list.reduce(function (sum, n) { return sum + cats[n]; }, 0);
+        var o = el("option", game + " (" + total + ")");
+        o.value = "game:" + game;
+        gamesGroup.appendChild(o);
+      });
+      var catsGroup = el("optgroup");
+      catsGroup.label = "Categories";
+      catNames.forEach(function (name) {
         var o = el("option", name + " (" + cats[name] + ")");
         o.value = name;
-        cat.appendChild(o);
+        catsGroup.appendChild(o);
       });
+      if (gamesGroup.children.length) cat.appendChild(gamesGroup);
+      cat.appendChild(catsGroup);
 
       if (data.updated) {
         var d = new Date(data.updated);
@@ -149,17 +183,12 @@
       q.value = params.get("q") || "";
       if (params.get("cat") && cats[params.get("cat")]) cat.value = params.get("cat");
 
-      // ?game=... comes from the "TCGs we carry" tags on the home page. Use the
-      // Square category with the same name if there is one (ignoring case, accents
-      // and punctuation, and allowing e.g. "Pokémon TCG" for "Pokémon"); otherwise
-      // fall back to searching for the game's name.
+      // ?game=... comes from the "TCGs we carry" tags on the home page. Select that
+      // game's categories; if none of its categories have stock, search its name instead.
       var game = params.get("game");
       if (game) {
-        var g = norm(game);
-        var names = Object.keys(cats);
-        var match = names.filter(function (n) { return norm(n) === g; })[0] ||
-          names.filter(function (n) { return (" " + norm(n) + " ").indexOf(" " + g + " ") !== -1; })[0];
-        if (match) cat.value = match;
+        var known = Object.keys(gameCats).filter(function (n) { return norm(n) === norm(game); })[0];
+        if (known) cat.value = "game:" + known;
         else q.value = game;
       }
       if (params.get("sort")) sort.value = params.get("sort");
