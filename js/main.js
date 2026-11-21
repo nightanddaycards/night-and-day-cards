@@ -61,6 +61,8 @@
 
   // Facebook events: Facebook's Page Plugin (events tab), sized to fit the card.
   // The plugin only renders at widths between 180 and 500 px.
+  // 340 px tall shows ~3 events; the plugin scrolls internally for more.
+  var FB_HEIGHT = 340;
   var fb = $("fb-events");
   if (s.facebookUrl && fb) {
     fb.hidden = false;
@@ -70,14 +72,14 @@
       href: s.facebookUrl,
       tabs: "events",
       width: w,
-      height: 520,
+      height: FB_HEIGHT,
       small_header: "true",
       hide_cover: "true",
       show_facepile: "false",
       adapt_container_width: "true"
     });
     frame.width = w;
-    frame.height = 520;
+    frame.height = FB_HEIGHT;
     frame.title = "Upcoming events on Facebook";
     frame.loading = "lazy";
     frame.setAttribute("scrolling", "no");
