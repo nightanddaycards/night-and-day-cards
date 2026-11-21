@@ -31,5 +31,6 @@ window.SHOP = {
   discordUrl: "https://discord.gg/UamsswJ4Q7",  // Discord invite link
   // Facebook page. Its public events are embedded in the "By night" section.
   facebookUrl: "https://www.facebook.com/profile.php?id=61594657520152",
+  instagramUrl: "https://www.instagram.com/nightanddaycards/",
   shopUrl: ""      // Square Online store or checkout link
 };

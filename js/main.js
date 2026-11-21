@@ -96,10 +96,42 @@
   setLink("discord-link", s.discordUrl);
   setLink("facebook-link", s.facebookUrl);
   setLink("fb-events-link", s.facebookUrl);
+  setLink("instagram-link", s.instagramUrl);
+  setLink("insta-head-link", s.instagramUrl);
+
+  // Instagram feed: data/instagram.json is written daily by
+  // .github/workflows/update-instagram.yml. The section stays hidden without it.
+  var grid = $("insta-grid");
+  if (grid && window.fetch) {
+    fetch("data/instagram.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var posts = (data && data.posts) || [];
+        posts.forEach(function (p) {
+          if (!/^https:\/\/www\.instagram\.com\//.test(p.url)) return;
+          var li = el("li", "", p.video ? "is-video" : "");
+          var a = document.createElement("a");
+          a.href = p.url;
+          a.target = "_blank";
+          a.rel = "noopener";
+          var img = document.createElement("img");
+          img.src = p.image;
+          img.alt = p.alt || "Instagram post";
+          img.loading = "lazy";
+          img.width = 320;
+          img.height = 320;
+          a.appendChild(img);
+          li.appendChild(a);
+          grid.appendChild(li);
+        });
+        if (grid.children.length) $("instagram").hidden = false;
+      })
+      .catch(function () { /* leave the section hidden */ });
+  }
   setLink("phone-link", s.phone ? "tel:" + s.phone.replace(/[^\d+]/g, "") : "", s.phone);
   setLink("email-link", s.email ? "mailto:" + s.email : "", s.email);
 
-  if (!s.phone && !s.email && !s.discordUrl && !s.facebookUrl) $("contact-block").hidden = true;
+  if (!s.phone && !s.email && !s.discordUrl && !s.facebookUrl && !s.instagramUrl) $("contact-block").hidden = true;
 
   $("year").textContent = new Date().getFullYear();
 })();
