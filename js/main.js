@@ -134,4 +134,58 @@
   if (!s.phone && !s.email && !s.discordUrl && !s.facebookUrl && !s.instagramUrl) $("contact-block").hidden = true;
 
   $("year").textContent = new Date().getFullYear();
+
+  // Structured data for Google (schema.org LocalBusiness), built from shop.js so
+  // hours, address and links stay in one place. Google reads JSON-LD added by script.
+  // Check it at https://search.google.com/test/rich-results
+  function to24(t, fallbackMeridiem) {
+    var m = /^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i.exec(t.trim());
+    if (!m) return null;
+    var h = parseInt(m[1], 10) % 12;
+    var mer = (m[3] || fallbackMeridiem || "").toLowerCase();
+    if (!mer) return null;
+    if (mer === "pm") h += 12;
+    return String(h).padStart(2, "0") + ":" + (m[2] || "00");
+  }
+  var specs = {};
+  (s.hours || []).forEach(function (row) {
+    var parts = String(row[1]).split(/\s*[–-]\s*/);
+    if (parts.length !== 2) return; // "Closed" or anything unusual is skipped
+    var closeMer = (/(am|pm)\s*$/i.exec(parts[1]) || [])[1];
+    var opens = to24(parts[0], closeMer);
+    var closes = to24(parts[1]);
+    if (!opens || !closes) return;
+    var key = opens + "-" + closes;
+    if (!specs[key]) specs[key] = { "@type": "OpeningHoursSpecification", dayOfWeek: [], opens: opens, closes: closes };
+    specs[key].dayOfWeek.push(row[0]);
+  });
+  var addrLines = s.address || [];
+  var cityLine = /^(.+?),\s*([A-Z]{2})\s+(\d{5})/.exec(addrLines[addrLines.length - 1] || "");
+  var ld = {
+    "@context": "https://schema.org",
+    "@type": "HobbyShop",
+    name: "Night & Day Cards",
+    description: s.tagline,
+    url: "https://nightanddaycards.com/",
+    logo: "https://nightanddaycards.com/img/logo.png",
+    image: "https://nightanddaycards.com/img/og-image.png",
+    telephone: s.phone || undefined,
+    email: s.email || undefined,
+    hasMap: s.mapUrl || undefined,
+    address: cityLine ? {
+      "@type": "PostalAddress",
+      streetAddress: addrLines.slice(0, -1).join(", "),
+      addressLocality: cityLine[1],
+      addressRegion: cityLine[2],
+      postalCode: cityLine[3],
+      addressCountry: "US"
+    } : undefined,
+    openingHoursSpecification: Object.keys(specs).map(function (k) { return specs[k]; }),
+    sameAs: [s.facebookUrl, s.instagramUrl, s.discordUrl].filter(Boolean),
+    knowsAbout: s.games && s.games.length ? s.games : undefined
+  };
+  var ldScript = document.createElement("script");
+  ldScript.type = "application/ld+json";
+  ldScript.textContent = JSON.stringify(ld);
+  document.head.appendChild(ldScript);
 })();
