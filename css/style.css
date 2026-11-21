@@ -80,10 +80,11 @@ a:hover { color: var(--text); }
 .games { padding: 0 var(--pad) 2.5rem; }
 .games h2 { margin: 0 0 .75rem; font-family: var(--font-display); font-size: 1.25rem; color: var(--muted); }
 #games-list { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0; padding: 0; list-style: none; }
-#games-list li {
-  padding: .35rem .9rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--panel);
-  font-family: var(--font-display); font-weight: 600;
+#games-list a {
+  display: block; padding: .35rem .9rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--panel);
+  color: var(--text); font-family: var(--font-display); font-weight: 600; text-decoration: none;
 }
+#games-list a:hover { border-color: var(--gold); color: var(--gold); }
 
 .card { --c: var(--lav); display: flex; padding: 2px; background: var(--c); clip-path: var(--chamfer-out); }
 .card-in { flex: 1; padding: clamp(1.5rem, 3vw, 2.25rem); background: var(--panel); clip-path: var(--chamfer-in); }

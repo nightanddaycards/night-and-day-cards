@@ -10,9 +10,11 @@
     if (cls) e.className = cls;
     return e;
   }
-  // Lowercase and strip accents so "pokemon" matches "Pokémon"
+  // Lowercase, strip accents and punctuation so "pokemon" matches "Pokémon"
+  // and "yu gi oh" matches "Yu-Gi-Oh!"
   function norm(str) {
-    return String(str || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    return String(str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ").trim();
   }
   var fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
   function priceText(min, max) {
@@ -146,6 +148,20 @@
       var params = new URLSearchParams(location.search);
       q.value = params.get("q") || "";
       if (params.get("cat") && cats[params.get("cat")]) cat.value = params.get("cat");
+
+      // ?game=... comes from the "TCGs we carry" tags on the home page. Use the
+      // Square category with the same name if there is one (ignoring case, accents
+      // and punctuation, and allowing e.g. "Pokémon TCG" for "Pokémon"); otherwise
+      // fall back to searching for the game's name.
+      var game = params.get("game");
+      if (game) {
+        var g = norm(game);
+        var names = Object.keys(cats);
+        var match = names.filter(function (n) { return norm(n) === g; })[0] ||
+          names.filter(function (n) { return (" " + norm(n) + " ").indexOf(" " + g + " ") !== -1; })[0];
+        if (match) cat.value = match;
+        else q.value = game;
+      }
       if (params.get("sort")) sort.value = params.get("sort");
       if (!sort.value) sort.value = "name";
 

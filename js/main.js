@@ -26,7 +26,14 @@
   var games = s.games || [];
   if (games.length) {
     var gl = $("games-list");
-    games.forEach(function (g) { gl.appendChild(el("li", g)); });
+    // Each game links to the Products page filtered to that game
+    games.forEach(function (g) {
+      var li = el("li");
+      var a = el("a", g);
+      a.href = "products.html?game=" + encodeURIComponent(g);
+      li.appendChild(a);
+      gl.appendChild(li);
+    });
     $("games").hidden = false;
   }
 
