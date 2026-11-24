@@ -117,7 +117,8 @@ export default {
         // can be diagnosed from the cart page without opening the Cloudflare logs
         const first = (data.errors || [])[0] || {};
         const err = new Error("square");
-        err.code = [path.split("/")[1], res.status, first.code, first.field].filter(Boolean).join(" ");
+        err.code = [path.split("/")[1], res.status, first.code, first.field].filter(Boolean).join(" ") +
+          (first.detail ? ": " + String(first.detail).slice(0, 200) : "");
         throw err;
       }
       return data;
