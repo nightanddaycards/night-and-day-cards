@@ -37,6 +37,22 @@ export default {
       new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    // Opening the worker URL in a browser shows a setup check (no secrets revealed)
+    if (request.method === "GET") {
+      const configured = !!(env.SQUARE_ACCESS_TOKEN && env.SQUARE_LOCATION_ID);
+      const paused = String(env.ORDERING_ENABLED || "").trim().toLowerCase() === "false";
+      return reply(200, {
+        status: configured ? (paused ? "paused" : "ready") : "not configured",
+        message: !configured
+          ? "Add SQUARE_ACCESS_TOKEN (secret) and SQUARE_LOCATION_ID in Settings > Variables and Secrets."
+          : paused
+            ? "Running, but ORDERING_ENABLED is false, so checkouts are refused."
+            : "Running. The website's cart sends orders here.",
+        squareToken: env.SQUARE_ACCESS_TOKEN ? "set" : "missing",
+        locationId: env.SQUARE_LOCATION_ID ? "set" : "missing",
+        siteUrl: site
+      });
+    }
     if (request.method !== "POST") return reply(405, { error: "method", message: "Use POST." });
     if (!allowed) return reply(403, { error: "origin", message: "Not allowed." });
     if (String(env.ORDERING_ENABLED || "").trim().toLowerCase() === "false") {
