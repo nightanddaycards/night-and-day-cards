@@ -213,13 +213,13 @@ export default {
             }
           ]
         },
-        // ask_for_shipping_address is left out on purpose: it defaults to false, and
-        // sending it alongside the order's pickup fulfillment may conflict.
+        // No pre_populated_data: Square rejects buyer_email/phone alongside a fulfillment
+        // ("Only one of [fulfillment, buyer_email] fields should be set"). The pickup
+        // recipient above already carries the customer's name, phone and email.
         checkout_options: {
           allow_tipping: false,
           redirect_url: `${site}/order-complete.html`
-        },
-        pre_populated_data: { buyer_phone_number: phone, ...(email ? { buyer_email: email } : {}) }
+        }
       });
 
       const url = link.payment_link && (link.payment_link.url || link.payment_link.long_url);
