@@ -7,7 +7,7 @@ All shop details (hours, events, address, links) live in `js/shop.js`.
 Empty values are hidden on the page.
 
 ## Products page (from Square)
-`products.html` lists what's in stock, from your Square catalog and inventory. The
+`products.html` (at `/products`) lists what's in stock, from your Square catalog and inventory. The
 deploy workflow (`.github/workflows/deploy.yml`) builds `data/products.json` and
 publishes the site every hour and on every push to `main`. The product list is
 never committed, so stock updates don't clutter the repo.
@@ -120,8 +120,9 @@ The scripts use Graph API v23.0. Meta retires each version about two years after
 release. Before that, update `GRAPH` in both scripts to a current version.
 
 ## Preview locally
-    python3 -m http.server 8000
-Then open http://localhost:8000
+    python3 scripts/serve.py
+Then open http://localhost:8000. (This handles clean addresses like `/products`,
+which `python3 -m http.server` doesn't.)
 
 ## Deploy on GitHub Pages
 1. Create a GitHub repo and push this folder to the `main` branch.

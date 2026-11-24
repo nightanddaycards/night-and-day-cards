@@ -19,6 +19,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Show clean addresses (/products instead of /products.html, / instead of /index.html)
+    if (/\.html$/.test(location.pathname) && history.replaceState) {
+      history.replaceState(null, "", location.pathname.replace(/(index)?\.html$/, "") + location.search + location.hash);
+    }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -29,11 +35,11 @@
       <span>night &amp; day cards</span>
     </a>
     <nav aria-label="Main">
-      <a href="products.html">Products</a>
+      <a href="/products">Products</a>
       <a href="#hours">Hours</a>
       <a href="#events">Events</a>
       <a href="#visit">Visit</a>
-      <a href="cart.html" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
+      <a href="/cart" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
     </nav>
   </header>
 
@@ -58,7 +64,7 @@
     <section class="featured" id="featured" aria-labelledby="featured-h" hidden>
       <div class="featured-head">
         <h2 id="featured-h">Featured</h2>
-        <a href="products.html">See all products</a>
+        <a href="/products">See all products</a>
       </div>
       <ul id="featured-grid" class="product-grid featured-grid"></ul>
     </section>

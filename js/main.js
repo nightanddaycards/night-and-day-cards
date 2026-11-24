@@ -30,7 +30,7 @@
     games.forEach(function (g) {
       var li = el("li");
       var a = el("a", g);
-      a.href = "products.html?game=" + encodeURIComponent(g);
+      a.href = "/products?game=" + encodeURIComponent(g);
       li.appendChild(a);
       gl.appendChild(li);
     });

@@ -218,7 +218,7 @@ export default {
         // recipient above already carries the customer's name, phone and email.
         checkout_options: {
           allow_tipping: false,
-          redirect_url: `${site}/order-complete.html`
+          redirect_url: `${site}/order-complete`
         }
       });
 

@@ -12,21 +12,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Show clean addresses (/products instead of /products.html, / instead of /index.html)
+    if (/\.html$/.test(location.pathname) && history.replaceState) {
+      history.replaceState(null, "", location.pathname.replace(/(index)?\.html$/, "") + location.search + location.hash);
+    }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="site-header">
-    <a class="brand" href="index.html">
+    <a class="brand" href="/">
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
       <span>night &amp; day cards</span>
     </a>
     <nav aria-label="Main">
-      <a href="products.html">Products</a>
-      <a href="index.html#hours">Hours</a>
-      <a href="index.html#events">Events</a>
-      <a href="index.html#visit">Visit</a>
-      <a href="cart.html" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
+      <a href="/products">Products</a>
+      <a href="/#hours">Hours</a>
+      <a href="/#events">Events</a>
+      <a href="/#visit">Visit</a>
+      <a href="/cart" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
     </nav>
   </header>
 
@@ -36,7 +42,7 @@
     <p id="order-ref" class="order-ref" hidden></p>
     <p id="pickup-where"></p>
     <p id="pickup-note" class="pickup-note"></p>
-    <p><a class="btn btn-dark" href="products.html">Keep browsing</a></p>
+    <p><a class="btn btn-dark" href="/products">Keep browsing</a></p>
   </main>
 
   <footer class="site-footer">

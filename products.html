@@ -7,11 +7,11 @@
   <meta name="theme-color" content="#08080d">
   <title>Products in Stock | Night &amp; Day Cards, Morgantown, WV</title>
   <meta name="description" content="See what's in stock at Night &amp; Day Cards in Morgantown, WV: Pokémon, Magic: The Gathering, Riftbound, Yu-Gi-Oh! and Disney Lorcana products, updated hourly.">
-  <link rel="canonical" href="https://www.nightanddaycards.com/products.html">
+  <link rel="canonical" href="https://www.nightanddaycards.com/products">
   <meta property="og:title" content="Products in Stock | Night &amp; Day Cards">
   <meta property="og:description" content="See what's in stock at Night &amp; Day Cards in Morgantown, WV.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.nightanddaycards.com/products.html">
+  <meta property="og:url" content="https://www.nightanddaycards.com/products">
   <meta property="og:image" content="https://www.nightanddaycards.com/img/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -19,21 +19,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Show clean addresses (/products instead of /products.html, / instead of /index.html)
+    if (/\.html$/.test(location.pathname) && history.replaceState) {
+      history.replaceState(null, "", location.pathname.replace(/(index)?\.html$/, "") + location.search + location.hash);
+    }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="site-header">
-    <a class="brand" href="index.html">
+    <a class="brand" href="/">
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
       <span>night &amp; day cards</span>
     </a>
     <nav aria-label="Main">
-      <a href="products.html" aria-current="page">Products</a>
-      <a href="index.html#hours">Hours</a>
-      <a href="index.html#events">Events</a>
-      <a href="index.html#visit">Visit</a>
-      <a href="cart.html" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
+      <a href="/products" aria-current="page">Products</a>
+      <a href="/#hours">Hours</a>
+      <a href="/#events">Events</a>
+      <a href="/#visit">Visit</a>
+      <a href="/cart" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
     </nav>
   </header>
 
