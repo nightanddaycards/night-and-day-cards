@@ -16,6 +16,9 @@ const API = "https://connect.squareup.com/v2";
 const SQUARE_VERSION = "2025-01-23";
 const DEFAULT_LOW_STOCK = 3; // used when a variation has no low-stock alert set in Square
 const MAX_DESCRIPTION = 200;
+// Names of the Square custom attribute that marks featured items (any capitalization)
+const FEATURED_ATTRIBUTES = ["featured product", "featured"];
+const MAX_FEATURED = 12;
 
 const TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 if (!TOKEN && process.env.REQUIRE_SQUARE === "true") {
@@ -119,7 +122,25 @@ function variationStock(v) {
   return qty <= threshold ? "low" : "in";
 }
 
+// Featured items: a custom attribute named "Featured Product" (or "Featured") on the item (or one of its
+// variations). A Yes/No attribute set to Yes features the item; a Number attribute
+// features it in that order (1 first; 0 or blank turns it off); a Text attribute
+// counts when it says yes/true/y/x/1. Returns a sort rank, or null if not featured.
+const attributeNamesSeen = new Set();
+function featuredRank(obj) {
+  for (const v of Object.values(obj.custom_attribute_values || {})) {
+    if (v.name) attributeNamesSeen.add(v.name);
+    if (!FEATURED_ATTRIBUTES.includes((v.name || "").trim().toLowerCase().replace(/\s+/g, " "))) continue;
+    if (v.boolean_value === true) return Number.MAX_SAFE_INTEGER;
+    if (v.number_value !== undefined && Number(v.number_value) > 0) return Number(v.number_value);
+    if (/^(yes|true|y|x|1)$/i.test(String(v.string_value || "").trim())) return Number.MAX_SAFE_INTEGER;
+    if ((v.selection_uid_values || []).length) return Number.MAX_SAFE_INTEGER;
+  }
+  return null;
+}
+
 const products = [];
+const featured = [];
 for (const item of items) {
   const d = item.item_data || {};
   if (d.is_archived || !atLocation(item)) continue;
@@ -140,7 +161,9 @@ for (const item of items) {
   const prices = variations.map((v) => v.price).filter((p) => p !== null);
   const desc = (d.description_plaintext || "").replace(/\s+/g, " ").trim();
 
-  products.push({
+  const ranks = [featuredRank(item), ...(d.variations || []).map(featuredRank)].filter((r) => r !== null);
+
+  const product = {
     id: item.id,
     name: d.name || "Untitled item",
     category: categories[catId] || "Other",
@@ -151,7 +174,9 @@ for (const item of items) {
     stock: variations.some((v) => v.stock === "in") ? "in" : "low",
     // Only list options when there's a real choice (e.g. sizes, conditions)
     options: variations.length > 1 ? variations.map((v) => ({ name: v.name, price: v.price, stock: v.stock })) : undefined
-  });
+  };
+  products.push(product);
+  if (ranks.length) featured.push({ rank: Math.min(...ranks), product });
 }
 
 products.sort((a, b) => a.name.localeCompare(b.name));
@@ -162,3 +187,18 @@ await writeFile(
   JSON.stringify({ updated: new Date().toISOString(), products })
 );
 console.log(`Saved ${products.length} in-stock products (of ${items.length} catalog items).`);
+
+// Featured: numbered items first (1, 2, 3...), then the rest by name
+featured.sort((a, b) => a.rank - b.rank || a.product.name.localeCompare(b.product.name));
+await writeFile(
+  "data/featured.json",
+  JSON.stringify({ updated: new Date().toISOString(), products: featured.slice(0, MAX_FEATURED).map((f) => f.product) })
+);
+console.log(`Featured: ${featured.length} in-stock item(s)${featured.length > MAX_FEATURED ? `, showing the first ${MAX_FEATURED}` : ""}.`);
+if (!featured.length) {
+  console.log(
+    `No in-stock items have a "Featured Product" custom attribute turned on. Custom attributes seen: ${
+      [...attributeNamesSeen].join(", ") || "(none)"
+    }`
+  );
+}

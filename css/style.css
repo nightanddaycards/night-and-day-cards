@@ -193,5 +193,10 @@ a:hover { color: var(--text); }
 .stock { padding: .1rem .5rem; border-radius: .25rem; font-size: .8rem; font-weight: 700; }
 .stock-in { background: #1f3b2c; color: #8fe0b0; }
 .stock-low { background: #43331a; color: var(--gold); }
+/* Home page Featured section (reuses the product card styles) */
+.featured { padding: 0 var(--pad) 2.5rem; }
+.featured-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1.5rem; margin-bottom: 1rem; }
+.featured-head h2 { margin: 0; font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.25rem); line-height: 1.1; }
+
 .more-wrap { display: flex; justify-content: center; margin-top: 1.5rem; }
 .more-wrap .btn { border: 0; cursor: pointer; }

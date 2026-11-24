@@ -33,6 +33,22 @@ One-time setup:
 
 The Instagram workflow's commits are picked up by the next hourly deploy.
 
+### Featured products (home page)
+The home page's "Featured" section shows items that have a custom attribute named
+**Featured Product** turned on in Square. It updates with the hourly deploy and shows up to
+12 in-stock items. The section is hidden when nothing featured is in stock.
+
+1. In Square Dashboard, create an item custom attribute named `Featured Product` (Items >
+   Item library > Settings > Custom attributes; Square may move this). Use the
+   Yes/No type, or Number if you want to control the order.
+2. Turn it on for the items to feature. With Number: 1 shows first, then 2, and so on.
+   Items set to Yes (or with no number) come after the numbered ones, A–Z. Set a
+   number to 0 or clear it to stop featuring the item.
+3. Wait for the next hourly deploy, or run "Deploy site" from the Actions tab.
+
+If nothing appears, open the latest "Deploy site" run. The "Fetch products from
+Square" step lists the custom attribute names it found.
+
 ## Instagram feed
 A GitHub Action (`.github/workflows/update-instagram.yml`) pulls the 6 latest posts
 from Instagram once a day. It saves the photos to `img/instagram/` and the list to

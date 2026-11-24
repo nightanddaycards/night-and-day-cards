@@ -37,6 +37,21 @@
     $("games").hidden = false;
   }
 
+  // Featured products: data/featured.json is built from Square on every deploy
+  // (items with the "Featured" custom attribute turned on, see scripts/fetch-square.mjs).
+  // The section stays hidden if nothing is featured or in stock.
+  var fgrid = $("featured-grid");
+  if (fgrid && window.fetch && window.ProductCard) {
+    fetch("data/featured.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var list = (data && data.products) || [];
+        list.forEach(function (p) { fgrid.appendChild(ProductCard.render(p, "h3")); });
+        if (list.length) $("featured").hidden = false;
+      })
+      .catch(function () { /* leave the section hidden */ });
+  }
+
   var now = new Date();
   var today = DAYS[now.getDay()];
   var hours = $("hours-list");
