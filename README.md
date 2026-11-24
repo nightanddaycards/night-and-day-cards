@@ -49,6 +49,47 @@ The home page's "Featured" section shows items that have a custom attribute name
 If nothing appears, open the latest "Deploy site" run. The "Fetch products from
 Square" step lists the custom attribute names it found.
 
+## Online ordering (in-store pickup)
+Customers add items to a cart on the site, then pay on a Square-hosted checkout page.
+Orders appear in Square (Order Manager / POS) as pickup orders, sales tax is added by
+Square's tax rules, and stock is deducted when paid. No Square Online plan needed;
+Square's normal online card fees apply.
+
+How it fits together:
+- `js/cart.js` keeps the cart in the visitor's browser; `cart.html` collects the
+  pickup name/phone/email; `order-complete.html` is where Square sends them after paying.
+- `worker/checkout-worker.js` runs on Cloudflare Workers (free plan). It checks each
+  item against Square (still sold, fixed price, enough live stock), then creates the
+  Square checkout. It holds the Square token, so the token never reaches the browser.
+- Everything is off until `checkoutUrl` is set in `js/shop.js`.
+
+One-time setup:
+1. Create a free account at cloudflare.com.
+2. Workers & Pages > Create > Create Worker. Name it (e.g. `ndc-checkout`) and Deploy.
+3. Click "Edit code", replace everything with the contents of
+   `worker/checkout-worker.js`, and Deploy.
+4. In the worker: Settings > Variables and Secrets, add:
+   - `SQUARE_ACCESS_TOKEN`: type **Secret**, the same Square production token as the GitHub secret
+   - `SQUARE_LOCATION_ID`: type Text, from Square Dashboard > Settings > Locations
+   - `SITE_URL`: type Text, `https://www.nightanddaycards.com`
+5. Copy the worker's URL (like `https://ndc-checkout.<you>.workers.dev`) into
+   `checkoutUrl` in `js/shop.js`, commit, and push.
+6. Test: place a small real order, check it shows up in Square, then refund it from
+   the Square Dashboard.
+
+Turning online ordering on and off:
+- **Main switch:** `onlineOrdering` in `js/shop.js` (`true` / `false`). Off hides the
+  cart and "Add to cart" buttons, and the cart page shows `orderingPausedMessage`.
+  Saved carts are kept. Edit it on GitHub (open the file, click the pencil, commit);
+  the site updates in about a minute, though some visitors' browsers can keep the
+  old setting for up to 10 minutes.
+- **Instant stop:** in the Cloudflare worker, Settings > Variables and Secrets, set
+  `ORDERING_ENABLED` to `false` (then `true`, or delete it, to resume). Checkouts are
+  refused right away, even for people who already have the page open.
+
+To change the worker later, paste the updated file into the Cloudflare editor again.
+Items with a variable price in Square show "Available in store" and can't be ordered online.
+
 ## Instagram feed
 A GitHub Action (`.github/workflows/update-instagram.yml`) pulls the 6 latest posts
 from Instagram once a day. It saves the photos to `img/instagram/` and the list to

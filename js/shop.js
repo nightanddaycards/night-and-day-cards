@@ -32,5 +32,15 @@ window.SHOP = {
   // Facebook page. Its public events are embedded in the "By night" section.
   facebookUrl: "https://www.facebook.com/profile.php?id=61594657520152",
   instagramUrl: "https://www.instagram.com/nightanddaycards/",
-  shopUrl: ""      // Square Online store or checkout link
+  shopUrl: "",      // Square Online store or checkout link
+
+  // ONLINE ORDERING ON/OFF SWITCH. true = customers can add to cart and check out.
+  // false = cart and "Add to cart" buttons are hidden; the cart page shows the
+  // message below and saved carts are kept for when ordering is back on.
+  onlineOrdering: true,
+  orderingPausedMessage: "Online ordering is paused right now. Give us a call or stop by and we'll help you out.",
+  // The checkout worker's URL (see worker/checkout-worker.js). Ordering stays off while empty.
+  checkoutUrl: "https://ndc-checkout.nightanddaycards.workers.dev/",
+  // Shown on the cart and order-complete pages
+  pickupNote: "Pickup only. We'll hold paid orders for 7 days."
 };

@@ -53,8 +53,45 @@ window.ProductCard = (function () {
     foot.appendChild(el("span", priceText(p.priceMin, p.priceMax), "product-price"));
     foot.appendChild(el("span", p.stock === "low" ? "Low stock" : "In stock", "stock stock-" + p.stock));
     body.appendChild(foot);
+    var buy = buyControls(p);
+    if (buy) body.appendChild(buy);
     li.appendChild(body);
     return li;
+  }
+
+  // "Add to cart" (with an option picker when the item has options). Only shown when
+  // online ordering is on (SHOP.checkoutUrl) and the item has a fixed price.
+  function buyControls(p) {
+    if (!window.Cart || !Cart.enabled) return null;
+    var choices = p.options
+      ? p.options.filter(function (o) { return o.id && o.price !== null; })
+      : (p.variationId && p.priceMin !== null ? [{ id: p.variationId, name: "", price: p.priceMin }] : []);
+    if (!choices.length) return el("p", "Available in store", "buy-note");
+
+    var wrap = el("div", "", "buy");
+    var select = null;
+    if (p.options) {
+      select = document.createElement("select");
+      select.className = "buy-option";
+      select.setAttribute("aria-label", "Option for " + p.name);
+      choices.forEach(function (o, i) {
+        var opt = el("option", o.name + " – " + fmt.format(o.price));
+        opt.value = String(i);
+        select.appendChild(opt);
+      });
+      wrap.appendChild(select);
+    }
+    var btn = el("button", "Add to cart", "btn btn-gold buy-btn");
+    btn.type = "button";
+    btn.addEventListener("click", function () {
+      var o = choices[select ? Number(select.value) : 0];
+      Cart.add({ id: o.id, name: p.name, option: o.name, price: o.price, image: p.image, category: p.category }, 1);
+      btn.textContent = "Added ✓";
+      btn.disabled = true;
+      setTimeout(function () { btn.textContent = "Add to cart"; btn.disabled = false; }, 1200);
+    });
+    wrap.appendChild(btn);
+    return wrap;
   }
 
   return { render: render, priceText: priceText };

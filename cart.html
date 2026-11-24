@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08080d">
+  <meta name="robots" content="noindex">
+  <title>Your Cart | Night &amp; Day Cards</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+      <span>night &amp; day cards</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="products.html">Products</a>
+      <a href="index.html#hours">Hours</a>
+      <a href="index.html#events">Events</a>
+      <a href="index.html#visit">Visit</a>
+      <a href="cart.html" id="cart-link" class="cart-link" aria-current="page" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <main id="main" class="cart-page">
+    <h1>Your cart</h1>
+
+    <p id="cart-off" class="cart-message" hidden>Online ordering isn't available yet. <a href="products.html">See what's in stock</a>, then call or stop by.</p>
+    <p id="cart-empty" class="cart-message" hidden>Your cart is empty. <a href="products.html">Browse products</a></p>
+
+    <div id="cart-full" class="cart-layout" hidden>
+      <section aria-labelledby="items-h">
+        <h2 id="items-h" class="visually-hidden">Items</h2>
+        <div id="cart-alert" class="cart-alert" role="alert" hidden></div>
+        <ul id="cart-lines" class="cart-lines"></ul>
+      </section>
+
+      <section class="cart-summary" aria-labelledby="summary-h">
+        <h2 id="summary-h">In-store pickup</h2>
+        <p class="pickup-where" id="pickup-where"></p>
+        <p id="pickup-note" class="pickup-note"></p>
+
+        <dl class="totals">
+          <div><dt>Subtotal</dt><dd id="subtotal">$0.00</dd></div>
+          <div><dt>Sales tax</dt><dd>Added at checkout</dd></div>
+        </dl>
+
+        <form id="checkout-form" class="checkout-form" novalidate>
+          <label class="field">
+            <span>Name for pickup</span>
+            <input id="c-name" name="name" autocomplete="name" required maxlength="80">
+          </label>
+          <label class="field">
+            <span>Phone</span>
+            <input id="c-phone" name="phone" type="tel" autocomplete="tel" required placeholder="304-555-1234">
+          </label>
+          <label class="field">
+            <span>Email <small>(for your receipt)</small></span>
+            <input id="c-email" name="email" type="email" autocomplete="email">
+          </label>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <button id="checkout-btn" class="btn btn-gold checkout-btn" type="submit">Checkout</button>
+          <p class="secure-note">You'll pay on Square's secure checkout page.</p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> Night &amp; Day Cards</p>
+  </footer>
+
+  <script src="js/shop.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/cart-page.js"></script>
+</body>
+</html>

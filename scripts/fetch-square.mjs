@@ -149,8 +149,10 @@ for (const item of items) {
   const variations = (d.variations || [])
     .filter((v) => !v.is_deleted && atLocation(v) && (v.item_variation_data || {}).sellable !== false)
     .map((v) => ({
+      id: v.id, // used by the cart to order this exact variation
       name: (v.item_variation_data || {}).name || "",
-      price: money((v.item_variation_data || {}).price_money),
+      // Variable-priced items have no price and can't be ordered online
+      price: (v.item_variation_data || {}).pricing_type === "VARIABLE_PRICING" ? null : money((v.item_variation_data || {}).price_money),
       stock: variationStock(v)
     }))
     .filter((v) => v.stock);
@@ -173,7 +175,8 @@ for (const item of items) {
     priceMax: prices.length ? Math.max(...prices) : null,
     stock: variations.some((v) => v.stock === "in") ? "in" : "low",
     // Only list options when there's a real choice (e.g. sizes, conditions)
-    options: variations.length > 1 ? variations.map((v) => ({ name: v.name, price: v.price, stock: v.stock })) : undefined
+    variationId: variations.length === 1 ? variations[0].id : undefined,
+    options: variations.length > 1 ? variations.map((v) => ({ id: v.id, name: v.name, price: v.price, stock: v.stock })) : undefined
   };
   products.push(product);
   if (ranks.length) featured.push({ rank: Math.min(...ranks), product });

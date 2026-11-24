@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08080d">
+  <meta name="robots" content="noindex">
+  <title>Order Received | Night &amp; Day Cards</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
+      <span>night &amp; day cards</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="products.html">Products</a>
+      <a href="index.html#hours">Hours</a>
+      <a href="index.html#events">Events</a>
+      <a href="index.html#visit">Visit</a>
+      <a href="cart.html" id="cart-link" class="cart-link" hidden>Cart <span id="cart-count" class="cart-count" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <main id="main" class="cart-page order-complete">
+    <h1>Thanks! Your order is in.</h1>
+    <p class="lede">We'll get it ready for pickup and contact you when it's ready. Your receipt is on its way from Square.</p>
+    <p id="order-ref" class="order-ref" hidden></p>
+    <p id="pickup-where"></p>
+    <p id="pickup-note" class="pickup-note"></p>
+    <p><a class="btn btn-dark" href="products.html">Keep browsing</a></p>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> Night &amp; Day Cards</p>
+  </footer>
+
+  <script src="js/shop.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    (function () {
+      var s = window.SHOP || {};
+      document.getElementById("year").textContent = new Date().getFullYear();
+      document.getElementById("pickup-where").textContent = "Pick up at " + (s.address || []).join(", ") + ".";
+      document.getElementById("pickup-note").textContent = s.pickupNote || "";
+      // Square adds the order/transaction IDs when it sends the customer back here.
+      // Only clear the cart when one is present, i.e. after a real checkout.
+      var q = new URLSearchParams(location.search);
+      var id = q.get("orderId") || q.get("transactionId") || q.get("checkoutId");
+      if (id && /^[A-Za-z0-9_-]+$/.test(id)) {
+        if (q.get("orderId")) {
+          var ref = document.getElementById("order-ref");
+          ref.textContent = "Order reference: " + q.get("orderId").slice(-8).toUpperCase();
+          ref.hidden = false;
+        }
+        if (window.Cart) Cart.clear();
+      }
+    })();
+  </script>
+</body>
+</html>
