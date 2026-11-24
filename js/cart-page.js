@@ -193,7 +193,7 @@
           btn.disabled = true;
           return formError(s.orderingPausedMessage || b.message);
         }
-        formError(b.message || "Something went wrong. Please try again.");
+        formError((b.message || "Something went wrong. Please try again.") + (b.code ? " (Error: " + b.code + ")" : ""));
       })
       .catch(function () {
         btn.disabled = false;

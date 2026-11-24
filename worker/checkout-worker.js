@@ -113,7 +113,12 @@ export default {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         console.log("Square error", path, res.status, JSON.stringify(data.errors || data));
-        throw new Error("square");
+        // Short, non-secret summary (e.g. "INVALID_VALUE order.fulfillments[0]") so problems
+        // can be diagnosed from the cart page without opening the Cloudflare logs
+        const first = (data.errors || [])[0] || {};
+        const err = new Error("square");
+        err.code = [path.split("/")[1], res.status, first.code, first.field].filter(Boolean).join(" ");
+        throw err;
       }
       return data;
     };
@@ -219,10 +224,11 @@ export default {
       if (!url) throw new Error("no url");
       return reply(200, { url });
     } catch (e) {
-      console.log("Checkout failed:", e && e.message);
+      console.log("Checkout failed:", e && e.message, e && e.code);
       return reply(502, {
         error: "unavailable",
-        message: "Checkout isn't working right now. Please try again in a few minutes, or call the shop."
+        message: "Checkout isn't working right now. Please try again in a few minutes, or call the shop.",
+        code: (e && e.code) || (e && e.message) || "unknown"
       });
     }
   }
