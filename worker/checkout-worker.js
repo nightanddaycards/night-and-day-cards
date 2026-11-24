@@ -213,9 +213,10 @@ export default {
             }
           ]
         },
+        // ask_for_shipping_address is left out on purpose: it defaults to false, and
+        // sending it alongside the order's pickup fulfillment may conflict.
         checkout_options: {
           allow_tipping: false,
-          ask_for_shipping_address: false,
           redirect_url: `${site}/order-complete.html`
         },
         pre_populated_data: { buyer_phone_number: phone, ...(email ? { buyer_email: email } : {}) }
