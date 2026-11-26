@@ -12,6 +12,11 @@
 //   SITE_URL             (text)    https://www.nightanddaycards.com
 //   ORDERING_ENABLED     (text)    optional; set to "false" to refuse all checkouts
 //                                  immediately (instant off switch), "true" or unset = on
+//   ADMIN_PASSWORD       (secret)  password for the hidden /update-hours page (12+ characters)
+//   HOURS                (KV namespace binding, under Settings > Bindings) where posted hours are saved
+//
+// Store hours: GET /hours returns the posted hours (or { hours: null } to use the regular
+// hours in js/shop.js). POST /hours with the admin password saves or resets them.
 //
 // Paste this whole file into the worker's code editor. No build step needed.
 
@@ -28,7 +33,7 @@ export default {
     const allowed = origin === site || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
     const cors = {
       "Access-Control-Allow-Origin": allowed ? origin : site,
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",
       Vary: "Origin"
@@ -37,6 +42,9 @@ export default {
       new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (new URL(request.url).pathname.replace(/\/+$/, "") === "/hours") {
+      return handleHours(request, env, reply, allowed);
+    }
     // Opening the worker URL in a browser shows a setup check (no secrets revealed)
     if (request.method === "GET") {
       const configured = !!(env.SQUARE_ACCESS_TOKEN && env.SQUARE_LOCATION_ID);
@@ -50,6 +58,8 @@ export default {
             : "Running. The website's cart sends orders here.",
         squareToken: env.SQUARE_ACCESS_TOKEN ? "set" : "missing",
         locationId: env.SQUARE_LOCATION_ID ? "set" : "missing",
+        hoursStorage: env.HOURS ? "set" : "missing",
+        adminPassword: env.ADMIN_PASSWORD ? "set" : "missing",
         siteUrl: site
       });
     }
@@ -235,6 +245,71 @@ export default {
     }
   }
 };
+
+// ---- Store hours (/hours) ----
+const WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+async function handleHours(request, env, reply, allowed) {
+  if (request.method === "GET") {
+    const saved = env.HOURS ? await env.HOURS.get("hours", "json") : null;
+    return reply(200, saved || { hours: null });
+  }
+  if (request.method !== "POST") return reply(405, { error: "method", message: "Use GET or POST." });
+  if (!allowed) return reply(403, { error: "origin", message: "Not allowed." });
+  if (!env.HOURS || !env.ADMIN_PASSWORD || String(env.ADMIN_PASSWORD).length < 12) {
+    return reply(500, {
+      error: "config",
+      message: "Hours editing isn't set up yet. Add the HOURS storage binding and an ADMIN_PASSWORD (12+ characters) to the worker."
+    });
+  }
+
+  let body;
+  try {
+    const text = await request.text();
+    if (text.length > 5000) throw new Error("too large");
+    body = JSON.parse(text);
+  } catch {
+    return reply(400, { error: "bad_request", message: "Invalid request." });
+  }
+
+  if (!(await sameSecret(body.password, env.ADMIN_PASSWORD))) {
+    await new Promise((r) => setTimeout(r, 1000)); // slows down password guessing
+    return reply(401, { error: "password", message: "Wrong password." });
+  }
+
+  if (body.action === "reset") {
+    await env.HOURS.delete("hours");
+    return reply(200, { hours: null });
+  }
+
+  // Exactly one row per day, Monday to Sunday; each is "Closed" or a short time range
+  const rows = Array.isArray(body.hours) ? body.hours : [];
+  const valid =
+    rows.length === 7 &&
+    rows.every((r, i) =>
+      Array.isArray(r) && r[0] === WEEK[i] &&
+      typeof r[1] === "string" && /^[0-9A-Za-z :–-]{1,40}$/.test(r[1])
+    );
+  if (!valid) return reply(400, { error: "hours", message: "Those hours don't look right." });
+  const note = String(body.note || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 200);
+
+  const saved = { hours: rows.map((r) => [r[0], r[1].trim()]), note, updatedAt: new Date().toISOString() };
+  await env.HOURS.put("hours", JSON.stringify(saved));
+  return reply(200, saved);
+}
+
+// Compares two strings in constant time (by comparing their SHA-256 hashes)
+async function sameSecret(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all(
+    [a, b].map((s) => crypto.subtle.digest("SHA-256", enc.encode(String(s || ""))))
+  );
+  const ua = new Uint8Array(x);
+  const ub = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i < ua.length; i++) diff |= ua[i] ^ ub[i];
+  return diff === 0 && !!a;
+}
 
 // Accepts 10-digit US numbers in any format (optionally with a leading 1);
 // returns E.164 ("+13045551234") or null.

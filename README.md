@@ -90,6 +90,26 @@ Turning online ordering on and off:
 To change the worker later, paste the updated file into the Cloudflare editor again.
 Items with a variable price in Square show "Available in store" and can't be ordered online.
 
+## Updating store hours (hidden page)
+
+Go to **www.nightanddaycards.com/update-hours** (not linked anywhere, and hidden from Google).
+Set each day's hours, add an optional note (e.g. "Closed Thanksgiving Day"), enter the password,
+and click **Save hours**. The home page shows the new hours right away, and they stay until you
+change them again. **Go back to regular hours** switches back to the hours in `js/shop.js`.
+
+The page is in a public repo, so anyone could find the address; the password is what protects it.
+Use a long one (four or more random words).
+
+One-time setup, in the Cloudflare dashboard (uses the same `ndc-checkout` worker):
+1. **Storage & Databases > KV > Create**, name it `ndc-hours`.
+2. The worker > **Settings > Bindings > Add > KV namespace**: variable name `HOURS`, namespace `ndc-hours`.
+3. The worker > **Settings > Variables and Secrets > Add**: type **Secret**, name `ADMIN_PASSWORD`,
+   value = your password (at least 12 characters).
+4. Paste the latest `worker/checkout-worker.js` into the worker's editor and click **Deploy**.
+
+Opening the worker's address in a browser shows `hoursStorage` and `adminPassword` as "set" when done.
+If the worker can't be reached, the home page shows the regular hours from `js/shop.js`.
+
 ## Instagram feed
 A GitHub Action (`.github/workflows/update-instagram.yml`) pulls the 6 latest posts
 from Instagram once a day. It saves the photos to `img/instagram/` and the list to

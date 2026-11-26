@@ -9,14 +9,17 @@ window.SHOP = {
   // Games shown as tags under the hero
   games: ["Pokémon", "Magic: The Gathering", "Riftbound", "Yu-Gi-Oh!", "Disney Lorcana", "One Piece", "Flesh and Blood", "Star Wars Unlimited", "Dragon Ball"],
 
-  // [day, hours] pairs, shown in this order. Day names must be full English names.
+  // REGULAR HOURS: [day, hours] pairs, shown in this order. Day names must be full English names.
+  // Hours posted on the hidden /update-hours page replace these until you click
+  // "Go back to regular hours" there.
+  hoursUrl: "https://ndc-checkout.nightanddaycards.workers.dev/hours",
   hours: [
     ["Monday", "10 am – 5 pm"],
     ["Tuesday", "10 am – 5 pm"],
     ["Wednesday", "10 am – 5 pm"],
     ["Thursday", "Closed"],
     ["Friday", "10 am – 5 pm"],
-    ["Saturday", "Closed"],
+    ["Saturday", "11 am – 7 pm"],
     ["Sunday", "Closed"]
   ],
 

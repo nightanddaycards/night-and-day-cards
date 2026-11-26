@@ -254,3 +254,24 @@ a:hover { color: var(--text); }
 .secure-note { margin: 0; color: var(--muted); font-size: .85rem; text-align: center; }
 .order-complete .lede { max-width: 50ch; }
 .order-ref { font-weight: 700; }
+
+/* Note under the hours (posted from /update-hours) */
+.hours-note { margin: 1rem 0 0; padding-left: .75rem; border-left: 3px solid var(--lav); color: var(--muted); }
+
+/* Hidden hours page (/update-hours) */
+.admin-hours form { display: grid; gap: 1.25rem; max-width: 40rem; }
+.hours-edit { margin: 0; padding: 0; border: 0; }
+.day-row {
+  display: grid; grid-template-columns: 7rem 5rem 1fr 1fr; align-items: end; gap: .75rem;
+  padding: .75rem 0; border-bottom: 1px solid var(--line);
+}
+.day-name { align-self: center; font-weight: 700; }
+.day-open { display: inline-flex; align-items: center; gap: .4rem; align-self: center; min-height: 2.75rem; }
+.day-open input { width: 1.2rem; height: 1.2rem; accent-color: var(--gold); }
+.day-row.is-closed .field { opacity: .4; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.form-ok { margin: 0; color: var(--gold); }
+@media (max-width: 34rem) {
+  .day-row { grid-template-columns: 1fr 1fr; }
+}
+.admin-hours .secure-note { text-align: left; }

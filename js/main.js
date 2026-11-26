@@ -65,9 +65,38 @@
     hours.appendChild(wrap);
   }
 
-  (s.hours || []).forEach(function (row) {
-    addRow(row[0], row[1], String(row[0]).toLowerCase() === today);
-  });
+  function showHours(rows, note) {
+    hours.textContent = "";
+    rows.forEach(function (row) {
+      addRow(row[0], row[1], String(row[0]).toLowerCase() === today);
+    });
+    var n = $("hours-note");
+    n.textContent = note || "";
+    n.hidden = !note;
+    buildStructuredData(rows);
+  }
+
+  // Hours posted on the hidden /update-hours page (saved by the worker) replace the
+  // regular hours in shop.js. If they can't be loaded quickly, the regular hours show.
+  var shown = false;
+  function showRegular() { if (!shown) { shown = true; showHours(s.hours || []); } }
+  if (s.hoursUrl && window.fetch) {
+    var fallback = setTimeout(showRegular, 1500);
+    fetch(s.hoursUrl, { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        clearTimeout(fallback);
+        if (data && Array.isArray(data.hours) && data.hours.length) {
+          shown = true;
+          showHours(data.hours, data.note);
+        } else {
+          showRegular();
+        }
+      })
+      .catch(function () { clearTimeout(fallback); showRegular(); });
+  } else {
+    showRegular();
+  }
 
   var events = $("events-list");
   var list = s.events || [];
@@ -169,45 +198,50 @@
     if (mer === "pm") h += 12;
     return String(h).padStart(2, "0") + ":" + (m[2] || "00");
   }
-  var specs = {};
-  (s.hours || []).forEach(function (row) {
-    var parts = String(row[1]).split(/\s*[–-]\s*/);
-    if (parts.length !== 2) return; // "Closed" or anything unusual is skipped
-    var closeMer = (/(am|pm)\s*$/i.exec(parts[1]) || [])[1];
-    var opens = to24(parts[0], closeMer);
-    var closes = to24(parts[1]);
-    if (!opens || !closes) return;
-    var key = opens + "-" + closes;
-    if (!specs[key]) specs[key] = { "@type": "OpeningHoursSpecification", dayOfWeek: [], opens: opens, closes: closes };
-    specs[key].dayOfWeek.push(row[0]);
-  });
-  var addrLines = s.address || [];
-  var cityLine = /^(.+?),\s*([A-Z]{2})\s+(\d{5})/.exec(addrLines[addrLines.length - 1] || "");
-  var ld = {
-    "@context": "https://schema.org",
-    "@type": "HobbyShop",
-    name: "Night & Day Cards",
-    description: s.tagline,
-    url: "https://www.nightanddaycards.com/",
-    logo: "https://www.nightanddaycards.com/img/logo.png",
-    image: "https://www.nightanddaycards.com/img/og-image.png",
-    telephone: s.phone || undefined,
-    email: s.email || undefined,
-    hasMap: s.mapUrl || undefined,
-    address: cityLine ? {
-      "@type": "PostalAddress",
-      streetAddress: addrLines.slice(0, -1).join(", "),
-      addressLocality: cityLine[1],
-      addressRegion: cityLine[2],
-      postalCode: cityLine[3],
-      addressCountry: "US"
-    } : undefined,
-    openingHoursSpecification: Object.keys(specs).map(function (k) { return specs[k]; }),
-    sameAs: [s.facebookUrl, s.instagramUrl, s.discordUrl].filter(Boolean),
-    knowsAbout: s.games && s.games.length ? s.games : undefined
-  };
-  var ldScript = document.createElement("script");
-  ldScript.type = "application/ld+json";
-  ldScript.textContent = JSON.stringify(ld);
-  document.head.appendChild(ldScript);
+  var ldScript;
+  function buildStructuredData(hourRows) {
+    var specs = {};
+    hourRows.forEach(function (row) {
+      var parts = String(row[1]).split(/\s*[–-]\s*/);
+      if (parts.length !== 2) return; // "Closed" or anything unusual is skipped
+      var closeMer = (/(am|pm)\s*$/i.exec(parts[1]) || [])[1];
+      var opens = to24(parts[0], closeMer);
+      var closes = to24(parts[1]);
+      if (!opens || !closes) return;
+      var key = opens + "-" + closes;
+      if (!specs[key]) specs[key] = { "@type": "OpeningHoursSpecification", dayOfWeek: [], opens: opens, closes: closes };
+      specs[key].dayOfWeek.push(row[0]);
+    });
+    var addrLines = s.address || [];
+    var cityLine = /^(.+?),\s*([A-Z]{2})\s+(\d{5})/.exec(addrLines[addrLines.length - 1] || "");
+    var ld = {
+      "@context": "https://schema.org",
+      "@type": "HobbyShop",
+      name: "Night & Day Cards",
+      description: s.tagline,
+      url: "https://www.nightanddaycards.com/",
+      logo: "https://www.nightanddaycards.com/img/logo.png",
+      image: "https://www.nightanddaycards.com/img/og-image.png",
+      telephone: s.phone || undefined,
+      email: s.email || undefined,
+      hasMap: s.mapUrl || undefined,
+      address: cityLine ? {
+        "@type": "PostalAddress",
+        streetAddress: addrLines.slice(0, -1).join(", "),
+        addressLocality: cityLine[1],
+        addressRegion: cityLine[2],
+        postalCode: cityLine[3],
+        addressCountry: "US"
+      } : undefined,
+      openingHoursSpecification: Object.keys(specs).map(function (k) { return specs[k]; }),
+      sameAs: [s.facebookUrl, s.instagramUrl, s.discordUrl].filter(Boolean),
+      knowsAbout: s.games && s.games.length ? s.games : undefined
+    };
+    if (!ldScript) {
+      ldScript = document.createElement("script");
+      ldScript.type = "application/ld+json";
+      document.head.appendChild(ldScript);
+    }
+    ldScript.textContent = JSON.stringify(ld);
+  }
 })();
