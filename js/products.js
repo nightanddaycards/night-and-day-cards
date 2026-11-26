@@ -25,6 +25,9 @@
   var q = $("q"), cat = $("cat");
   var all = [];
   var gameCats = {}; // game name (from shop.js) -> Square categories that belong to it
+  // Set when arriving from a home page game tag (?game=...). It isn't in the dropdown;
+  // choosing any category, or "Show all", clears it.
+  var activeGame = "";
   var filtered = [];
   var shown = 0;
 
@@ -43,23 +46,31 @@
   function apply() {
     var terms = norm(q.value).split(/\s+/).filter(Boolean);
     var c = cat.value;
+    if (c) activeGame = "";
     filtered = all.filter(function (p) {
-      if (c.indexOf("game:") === 0) {
-        if (gameCats[c.slice(5)].indexOf(p.category) === -1) return false;
+      if (activeGame) {
+        if (gameCats[activeGame].indexOf(p.category) === -1) return false;
       } else if (c && p.category !== c) return false;
       return terms.every(function (t) { return p._search.indexOf(t) !== -1; });
     });
     grid.textContent = "";
     shown = 0;
     countEl.textContent = filtered.length
-      ? filtered.length + (filtered.length === 1 ? " product" : " products")
+      ? filtered.length + (activeGame ? " " + activeGame : "") + (filtered.length === 1 ? " product" : " products")
       : "No products match. Try a different search or category.";
+    if (activeGame) {
+      var all_ = el("button", "Show all products", "link-btn");
+      all_.type = "button";
+      all_.addEventListener("click", function () { activeGame = ""; apply(); });
+      countEl.appendChild(document.createTextNode(" · "));
+      countEl.appendChild(all_);
+    }
     renderMore();
 
     // Keep the search in the URL so it can be shared or bookmarked
     var params = new URLSearchParams();
     if (q.value.trim()) params.set("q", q.value.trim());
-    if (c.indexOf("game:") === 0) params.set("game", c.slice(5));
+    if (activeGame) params.set("game", activeGame);
     else if (c) params.set("cat", c);
     var qs = params.toString();
     history.replaceState(null, "", qs ? "?" + qs : location.pathname);
@@ -90,8 +101,6 @@
       function wordsIn(haystack, needle) {
         return (" " + haystack + " ").indexOf(" " + needle + " ") !== -1;
       }
-      var gamesGroup = el("optgroup");
-      gamesGroup.label = "Games";
       ((window.SHOP && window.SHOP.games) || []).forEach(function (game) {
         var g = norm(game);
         var list = catNames.filter(function (n) {
@@ -99,22 +108,14 @@
           // the last check matches "Yugioh" to "Yu-Gi-Oh!"
           return wordsIn(a, g) || wordsIn(g, a) || a.replace(/ /g, "") === g.replace(/ /g, "");
         });
-        if (!list.length) return;
-        gameCats[game] = list;
-        var total = list.reduce(function (sum, n) { return sum + cats[n]; }, 0);
-        var o = el("option", game + " (" + total + ")");
-        o.value = "game:" + game;
-        gamesGroup.appendChild(o);
+        if (list.length) gameCats[game] = list;
       });
-      var catsGroup = el("optgroup");
-      catsGroup.label = "Categories";
+      // The dropdown lists Square's categories as they are
       catNames.forEach(function (name) {
         var o = el("option", name + " (" + cats[name] + ")");
         o.value = name;
-        catsGroup.appendChild(o);
+        cat.appendChild(o);
       });
-      if (gamesGroup.children.length) cat.appendChild(gamesGroup);
-      cat.appendChild(catsGroup);
 
       if (data.updated) {
         var d = new Date(data.updated);
@@ -133,7 +134,7 @@
       var game = params.get("game");
       if (game) {
         var known = Object.keys(gameCats).filter(function (n) { return norm(n) === norm(game); })[0];
-        if (known) cat.value = "game:" + known;
+        if (known) activeGame = known;
         else q.value = game;
       }
 
