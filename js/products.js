@@ -1,5 +1,5 @@
 // Products page: shows data/products.json (built from Square on every deploy,
-// see scripts/fetch-square.mjs) with search, category filter, and sort.
+// see scripts/fetch-square.mjs) with search and category filter. Products arrive sorted by name.
 (function () {
   var PAGE_SIZE = 48;
 
@@ -22,7 +22,7 @@
   var grid = $("product-grid");
   var countEl = $("count");
   var moreBtn = $("more");
-  var q = $("q"), cat = $("cat"), sort = $("sort");
+  var q = $("q"), cat = $("cat");
   var all = [];
   var gameCats = {}; // game name (from shop.js) -> Square categories that belong to it
   var filtered = [];
@@ -49,16 +49,6 @@
       } else if (c && p.category !== c) return false;
       return terms.every(function (t) { return p._search.indexOf(t) !== -1; });
     });
-    var s = sort.value;
-    if (s !== "name") {
-      var dir = s === "price-asc" ? 1 : -1;
-      filtered = filtered.slice().sort(function (a, b) {
-        // Items without a price go last either way
-        if (a.priceMin === null) return 1;
-        if (b.priceMin === null) return -1;
-        return (a.priceMin - b.priceMin) * dir;
-      });
-    }
     grid.textContent = "";
     shown = 0;
     countEl.textContent = filtered.length
@@ -71,7 +61,6 @@
     if (q.value.trim()) params.set("q", q.value.trim());
     if (c.indexOf("game:") === 0) params.set("game", c.slice(5));
     else if (c) params.set("cat", c);
-    if (s !== "name") params.set("sort", s);
     var qs = params.toString();
     history.replaceState(null, "", qs ? "?" + qs : location.pathname);
   }
@@ -147,8 +136,6 @@
         if (known) cat.value = "game:" + known;
         else q.value = game;
       }
-      if (params.get("sort")) sort.value = params.get("sort");
-      if (!sort.value) sort.value = "name";
 
       $("filters").hidden = false;
       apply();
@@ -158,7 +145,6 @@
   var timer;
   q.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(apply, 150); });
   cat.addEventListener("change", apply);
-  sort.addEventListener("change", apply);
   $("filters").addEventListener("submit", function (e) { e.preventDefault(); apply(); });
   moreBtn.addEventListener("click", renderMore);
 })();
