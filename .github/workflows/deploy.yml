@@ -38,6 +38,15 @@ jobs:
           SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           REQUIRE_SQUARE: "true" # fail instead of publishing without products
         run: node scripts/fetch-square.mjs
+      # Browsers keep scripts and styles for up to 10 minutes. Tagging their addresses
+      # with the commit ID (js/main.js?v=abc1234) makes browsers fetch the new copies
+      # right after a code change, so a new page never runs with an old script.
+      # Only the published copy is changed; the files in the repo stay as they are.
+      - name: Add version tags to script and style links
+        run: |
+          v="${GITHUB_SHA::7}"
+          sed -i -E "s#((src|href)=\"(js|css)/[^\"?]+\.(js|css))\"#\1?v=${v}\"#g" *.html
+          grep -h -o -E '(src|href)="(js|css)/[^"]+"' *.html | sort -u
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
